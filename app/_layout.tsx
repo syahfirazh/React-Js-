@@ -1,31 +1,26 @@
 import React from 'react'; 
 import { Stack } from 'expo-router'; 
-import { SafeAreaProvider } from 'react-native-safe-area-context'; 
- 
-import { 
-  EntriesProvider, 
-} from '../src/context/EntriesContext'; 
+import { DiaryProvider } from '../src/context/DiaryContext'; 
  
 export default function RootLayout() { 
   return ( 
-    <SafeAreaProvider> 
-      <EntriesProvider> 
-        <Stack> 
-          <Stack.Screen 
-            name="(tabs)" 
-            options={{ 
-              headerShown: false, 
-            }} 
-          /> 
+    <DiaryProvider> 
+      <Stack> 
+
+        <Stack.Screen 
+          name="(tabs)" 
+          options={{ 
+            headerShown: false, 
+          }} 
+        /> 
  
-          <Stack.Screen 
-            name="detail/[id]" 
-            options={{ 
-              title: 'Detail Diary', 
-            }} 
-          /> 
-        </Stack> 
-      </EntriesProvider> 
-    </SafeAreaProvider> 
+        <Stack.Screen 
+          name="detail/[id]" 
+          options={{ 
+            title: 'Detail Diary', 
+          }} 
+        /> 
+      </Stack> 
+    </DiaryProvider> 
   ); 
-}
+} 

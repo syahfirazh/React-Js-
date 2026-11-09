@@ -1,13 +1,14 @@
 export const COLORS = { 
   surface: '#FFFFFF', 
+  background: '#F8FAFC', 
   border: '#E5E7EB', 
   text: '#111827', 
   muted: '#6B7280', 
   accent: '#2563EB', 
+  danger: '#EF4444', 
 }; 
  
 export const SPACE = { 
-  xs: 4, 
   s: 8, 
   m: 12, 
   l: 16, 
@@ -15,13 +16,12 @@ export const SPACE = {
 }; 
  
 export const RADIUS = { 
-  card: 12, 
-  avatar: 32, 
+  card: 14, 
 }; 
  
 export const TYPO = { 
-  h1: 24, 
-  title: 16, 
+  h1: 26, 
+  title: 17, 
   body: 14, 
   caption: 12, 
 };

@@ -3,7 +3,6 @@ import React from 'react';
 import { 
   View, 
   Text, 
-  Image, 
   ScrollView, 
   Pressable, 
   StyleSheet, 
@@ -15,8 +14,8 @@ import {
 } from 'expo-router'; 
  
 import { 
-  useEntries, 
-} from '../../src/context/EntriesContext'; 
+  useDiary, 
+} from '../../src/context/DiaryContext'; 
  
 import { 
   COLORS, 
@@ -35,15 +34,16 @@ export default function DetailScreen() {
     getById, 
     likedIds, 
     toggleLike, 
-  } = useEntries(); 
+  } = useDiary(); 
  
-  const entry = getById(id); 
+  const entry = 
+    getById(id); 
  
   if (!entry) { 
     return ( 
       <View style={styles.center}> 
         <Text style={styles.body}> 
-          Entri tidak ditemukan. 
+          Diary tidak ditemukan. 
         </Text> 
       </View> 
     ); 
@@ -59,13 +59,11 @@ export default function DetailScreen() {
       /> 
  
       <ScrollView 
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.container}
       > 
-        <Image 
-          source={entry.moodImage} 
-          style={styles.hero} 
-          resizeMode="cover"
-        /> 
+        <Text style={styles.mood}> 
+          {entry.mood} 
+        </Text> 
  
         <Text style={styles.title}> 
           {entry.title} 
@@ -98,20 +96,17 @@ export default function DetailScreen() {
  
 const styles = 
   StyleSheet.create({ 
-    content: { 
+    container: { 
       padding: SPACE.l, 
       gap: SPACE.m, 
-      backgroundColor: COLORS.surface,
+      backgroundColor: COLORS.background,
       flexGrow: 1,
     }, 
-    hero: { 
-      width: '100%', 
-      aspectRatio: 16 / 9, 
-      borderRadius: RADIUS.card, 
-      backgroundColor: '#eef2ff', 
+    mood: { 
+      fontSize: 64, 
     }, 
     title: { 
-      fontSize: 22, 
+      fontSize: 24, 
       fontWeight: '700', 
       color: COLORS.text, 
     }, 
@@ -121,25 +116,25 @@ const styles =
     }, 
     body: { 
       fontSize: TYPO.body, 
-      color: COLORS.text, 
       lineHeight: 22, 
+      color: COLORS.text, 
     }, 
     likeButton: { 
+      padding: SPACE.m, 
       borderWidth: 1, 
       borderColor: COLORS.border, 
       borderRadius: RADIUS.card, 
-      padding: SPACE.m, 
       alignItems: 'center', 
       marginTop: SPACE.s,
     }, 
     likeText: { 
-      color: '#ef4444', 
       fontWeight: '700', 
+      color: COLORS.danger, 
     }, 
     center: { 
       flex: 1, 
-      alignItems: 'center', 
       justifyContent: 'center', 
-      backgroundColor: COLORS.surface,
+      alignItems: 'center', 
+      backgroundColor: COLORS.background,
     }, 
   });

@@ -8,6 +8,7 @@ import {
   TextInput, 
   Pressable, 
   StyleSheet, 
+  ScrollView, 
 } from 'react-native'; 
  
 import { 
@@ -15,8 +16,8 @@ import {
 } from 'expo-router'; 
  
 import { 
-  useEntries, 
-} from '../../src/context/EntriesContext'; 
+  useDiary, 
+} from '../../src/context/DiaryContext'; 
  
 import { 
   COLORS, 
@@ -24,22 +25,32 @@ import {
   RADIUS, 
 } from '../../src/styles/tokens'; 
  
+const MOODS = [ 
+  '😊', 
+  '💻', 
+  '📖', 
+  '🌟', 
+]; 
+ 
 export default function CreateScreen() { 
   const router = useRouter(); 
-  const { addEntry } = useEntries(); 
+  const { addEntry } = useDiary(); 
  
   const [title, setTitle] = 
     useState(''); 
  
   const [date, setDate] = 
-    useState('2026-10-24'); 
+    useState('2026-11-02'); 
  
-  const [preview, setPreview] = 
+  const [body, setBody] = 
     useState(''); 
+ 
+  const [mood, setMood] = 
+    useState('😊'); 
  
   const canSave = 
     title.trim().length > 0 && 
-    preview.trim().length > 0; 
+    body.trim().length > 0; 
  
   const save = () => { 
     if (!canSave) return; 
@@ -47,77 +58,102 @@ export default function CreateScreen() {
     addEntry({ 
       title: title.trim(), 
       date: date.trim(), 
-      preview: preview.trim(), 
-      body: preview.trim(), 
-      moodImage: require( 
-        '../../assets/moods/default.png' 
-      ), 
+      preview: 
+        body.trim().slice( 
+          0, 
+          80 
+        ), 
+      body: body.trim(), 
+      mood, 
     }); 
  
     setTitle(''); 
-    setPreview(''); 
+    setBody(''); 
+    setMood('😊'); 
  
     router.replace('/'); 
   }; 
  
   return ( 
-    <View style={styles.container}> 
-      <Text style={styles.title}> 
-        Tambah Entri 
+    <ScrollView contentContainerStyle={styles.container}> 
+      <Text style={styles.heading}> 
+        Tambah Diary 
       </Text> 
  
       <TextInput 
         style={styles.input} 
         placeholder="Judul catatan..." 
-        placeholderTextColor={COLORS.muted} 
-        value={title} 
-        onChangeText={setTitle} 
+        placeholderTextColor={COLORS.muted}
+        value={title}
+        onChangeText={setTitle}
       /> 
  
       <TextInput 
         style={styles.input} 
         placeholder="Tanggal (YYYY-MM-DD)" 
-        placeholderTextColor={COLORS.muted} 
-        value={date} 
-        onChangeText={setDate} 
+        placeholderTextColor={COLORS.muted}
+        value={date}
+        onChangeText={setDate}
       /> 
  
       <TextInput 
-        style={[styles.input, styles.multiline]} 
-        placeholder="Tuliskan isi catatan di sini..." 
-        placeholderTextColor={COLORS.muted} 
-        value={preview} 
-        onChangeText={setPreview} 
-        multiline 
+        style={[styles.input, styles.bodyInput]} 
+        placeholder="Tuliskan isi diary di sini..." 
+        placeholderTextColor={COLORS.muted}
+        value={body}
+        onChangeText={setBody}
+        multiline
       /> 
+ 
+      <Text style={styles.label}> 
+        Mood 
+      </Text> 
+ 
+      <View style={styles.moodRow}> 
+        {MOODS.map((item) => ( 
+          <Pressable 
+            key={item}
+            onPress={() => setMood(item)} 
+            style={[ 
+              styles.moodButton, 
+              mood === item && 
+                styles.moodSelected, 
+            ]} 
+          > 
+            <Text style={styles.moodText}> 
+              {item} 
+            </Text> 
+          </Pressable> 
+        ))} 
+      </View> 
  
       <Pressable 
         style={[
-          styles.button, 
+          styles.saveButton,
           !canSave && styles.disabled
-        ]} 
+        ]}
         onPress={save}
         disabled={!canSave}
       > 
-        <Text style={styles.buttonText}> 
+        <Text style={styles.saveText}> 
           Simpan 
         </Text> 
       </Pressable> 
-    </View> 
+    </ScrollView> 
   ); 
 } 
  
 const styles = 
   StyleSheet.create({ 
     container: { 
-      flex: 1, 
+      flexGrow: 1, 
       padding: SPACE.l, 
       gap: SPACE.m, 
       backgroundColor: 
-        COLORS.surface, 
+        COLORS.background, 
     }, 
-    title: { 
-      fontSize: 22, 
+    heading: { 
+      fontSize: 24, 
       fontWeight: '700', 
       color: COLORS.text,
     }, 
@@ -129,21 +165,46 @@ const styles =
       backgroundColor: '#fff', 
       color: COLORS.text,
     }, 
-    multiline: { 
+    bodyInput: { 
       minHeight: 120, 
       textAlignVertical: 'top', 
     }, 
-    button: { 
+    label: { 
+      fontWeight: '700', 
+      color: COLORS.text,
+    }, 
+    moodRow: { 
+      flexDirection: 'row', 
+      gap: SPACE.s, 
+    }, 
+    moodButton: { 
+      padding: 10, 
+      borderWidth: 1, 
+      borderColor: COLORS.border, 
+      borderRadius: 12, 
+      backgroundColor: '#fff', 
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: 48,
+    }, 
+    moodSelected: { 
+      borderColor: COLORS.accent, 
+      borderWidth: 2, 
+    }, 
+    moodText: { 
+      fontSize: 26, 
+    }, 
+    saveButton: { 
+      padding: 14, 
       backgroundColor: COLORS.accent, 
-      padding: SPACE.m, 
       borderRadius: RADIUS.card, 
       alignItems: 'center', 
       marginTop: SPACE.s,
     }, 
     disabled: { 
-      opacity: 0.5, 
+      opacity: 0.45, 
     }, 
-    buttonText: { 
+    saveText: { 
       color: '#fff', 
       fontWeight: '700', 
     }, 

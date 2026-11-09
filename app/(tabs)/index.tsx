@@ -1,31 +1,36 @@
-import React, { 
-  useMemo, 
-  useState, 
-} from 'react'; 
+import { 
+  useCallback, 
+  useRef, 
+} from "react"; 
  
 import { 
-  View, 
+  FlatList, 
+  Pressable, 
+  StyleSheet, 
   Text, 
   TextInput, 
-  FlatList, 
-  StyleSheet, 
-} from 'react-native'; 
+  View, 
+} from "react-native"; 
  
 import { 
   useRouter, 
-} from 'expo-router'; 
+} from "expo-router"; 
  
 import { 
-  useEntries, 
-} from '../../src/context/EntriesContext'; 
+  useDiary, 
+} from "../../src/context/DiaryContext"; 
  
-import DiaryCard from '../../src/components/DiaryCard'; 
+import { 
+  useDiarySearch, 
+} from "../../src/hooks/useDiarySearch"; 
+ 
+import DiaryCard from "../../src/components/DiaryCard"; 
  
 import { 
   COLORS, 
   SPACE, 
   TYPO, 
-} from '../../src/styles/tokens'; 
+} from "../../src/styles/tokens"; 
  
 export default function HomeScreen() { 
   const router = useRouter(); 
@@ -34,30 +39,33 @@ export default function HomeScreen() {
     entries, 
     likedIds, 
     toggleLike, 
-  } = useEntries(); 
+  } = useDiary(); 
  
-  const [query, setQuery] = 
-    useState(''); 
+  const { 
+    query, 
+    setQuery, 
+    filteredEntries, 
+    resultCount, 
+  } = useDiarySearch(entries); 
  
-  const data = useMemo(() => { 
-    const q = 
-      query.trim().toLowerCase(); 
+  const searchRef = useRef<TextInput>(null); 
  
-    if (!q) return entries; 
+  const openDetail = useCallback( 
+    (id: number) => { 
+      router.push({ 
+        pathname: "/detail/[id]", 
+        params: { 
+          id: String(id), 
+        }, 
+      }); 
+    }, 
+    [router] 
+  ); 
  
-    return entries.filter( 
-      (entry) => 
-        entry.title 
-          .toLowerCase() 
-          .includes(q) || 
-        entry.preview 
-          .toLowerCase() 
-          .includes(q) || 
-        entry.date 
-          .toLowerCase() 
-          .includes(q) 
-    ); 
-  }, [entries, query]); 
+  const clearSearch = useCallback(() => { 
+    setQuery(""); 
+    searchRef.current?.focus(); 
+  }, [setQuery]); 
  
   return ( 
     <View style={styles.container}> 
@@ -65,16 +73,28 @@ export default function HomeScreen() {
         Buku Harian 
       </Text> 
  
-      <TextInput 
-        style={styles.search} 
-        placeholder="Cari catatan..." 
-        placeholderTextColor={COLORS.muted} 
-        value={query} 
-        onChangeText={setQuery} 
-      /> 
+      <View style={styles.searchRow}> 
+        <TextInput 
+          ref={searchRef}
+          style={styles.search} 
+          placeholder="Cari catatan..." 
+          placeholderTextColor={COLORS.muted}
+          value={query} 
+          onChangeText={setQuery} 
+        /> 
+        {query.length > 0 && (
+          <Pressable style={styles.clearButton} onPress={clearSearch}> 
+            <Text>Clear</Text> 
+          </Pressable> 
+        )}
+      </View> 
+ 
+      <Text style={styles.counter}> 
+        {resultCount} entri ditemukan 
+      </Text> 
  
       <FlatList 
-        data={data} 
+        data={filteredEntries} 
         keyExtractor={(item) => 
           String(item.id) 
         } 
@@ -86,52 +106,78 @@ export default function HomeScreen() {
             title={item.title}
             date={item.date}
             preview={item.preview}
-            moodImage={item.moodImage}
+            mood={item.mood}
             liked={likedIds.has(item.id)}
+            onPress={() => 
+              openDetail(item.id) 
+            } 
             onToggleLike={() => 
               toggleLike(item.id) 
             } 
-            onPress={() => 
-              router.push({ 
-                pathname: 
-                  '/detail/[id]', 
-                params: { 
-                  id: String(item.id), 
-                }, 
-              }) 
-            } 
           /> 
         )} 
+        ListEmptyComponent={ 
+          <Text style={styles.empty}> 
+            Diary tidak ditemukan. 
+          </Text> 
+        } 
       /> 
     </View> 
   ); 
 } 
  
-const styles = 
-  StyleSheet.create({ 
-    container: { 
-      flex: 1, 
-      padding: SPACE.l, 
-      backgroundColor: 
-        COLORS.surface, 
-    }, 
-    header: { 
-      fontSize: TYPO.h1, 
-      fontWeight: '700', 
-      color: COLORS.text, 
-      marginBottom: SPACE.m, 
-    }, 
-    search: { 
-      borderWidth: 1, 
-      borderColor: COLORS.border, 
-      borderRadius: 12, 
-      padding: 10, 
-      marginBottom: SPACE.m, 
-      color: COLORS.text,
-      backgroundColor: COLORS.surface,
-    }, 
-    list: { 
-      gap: SPACE.m, 
-      paddingBottom: SPACE.xl, 
-    }, 
-  });
+const styles = StyleSheet.create({ 
+  container: { 
+    flex: 1, 
+    padding: SPACE.l, 
+    backgroundColor: 
+      COLORS.background, 
+  }, 
+ 
+  header: { 
+    fontSize: TYPO.h1, 
+    fontWeight: "700", 
+    color: COLORS.text, 
+    marginBottom: SPACE.m, 
+  }, 
+ 
+  searchRow: { 
+    flexDirection: "row", 
+    gap: SPACE.s, 
+  }, 
+ 
+  search: { 
+    flex: 1, 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    borderRadius: 12, 
+    padding: 10, 
+    backgroundColor: "#fff", 
+    color: COLORS.text,
+  }, 
+ 
+  clearButton: { 
+    justifyContent: "center", 
+    paddingHorizontal: 14, 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    borderRadius: 12, 
+    backgroundColor: "#fff", 
+  }, 
+ 
+  counter: { 
+    color: COLORS.muted, 
+    marginVertical: SPACE.s, 
+  }, 
+ 
+  list: { 
+    gap: SPACE.m, 
+    paddingBottom: SPACE.xl, 
+  }, 
+ 
+  empty: { 
+    textAlign: "center", 
+    color: COLORS.muted, 
+    paddingTop: 40, 
+  }, 
+});
